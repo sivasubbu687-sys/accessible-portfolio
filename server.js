@@ -8,12 +8,12 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const SUBMISSIONS_FILE = path.join(__dirname, 'submissions.json');
 
-// Configure Nodemailer transporter
+// Configure Nodemailer transporter with Gmail
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    user: 'sivasubbu687@gmail.com', // Your email
+    pass: process.env.EMAIL_PASS // The app password you must generate
   }
 });
 
@@ -94,7 +94,7 @@ app.post('/api/contact', (req, res) => {
 
   // Send Email Notification using Nodemailer
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: 'sivasubbu687@gmail.com',
     to: 'sivasubbu687@gmail.com', // Recipient email address
     subject: `New Portfolio Contact from: ${submissionData.name}`,
     text: `You have received a new message from your portfolio website!\n\nName: ${submissionData.name}\nEmail: ${submissionData.email}\nTimestamp: ${submissionData.timestamp}\n\nMessage:\n${submissionData.message}`
@@ -102,7 +102,7 @@ app.post('/api/contact', (req, res) => {
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      console.error('[EMAIL ERROR] Failed to send email. Check your EMAIL_USER and EMAIL_PASS environment variables.', error);
+      console.error('[EMAIL ERROR] Failed to send email. Ensure you have added the App Password to .env.', error);
     } else {
       console.log(`[EMAIL SUCCESS] Notification sent: ${info.response}`);
     }

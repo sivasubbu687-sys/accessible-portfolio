@@ -221,9 +221,9 @@ document.addEventListener('DOMContentLoaded', () => {
         firstInvalidElement.focus();
       }
     } else {
-      // Form values are valid on client side -> Post to Express backend
+      // Form values are valid on client side -> Post to Web3Forms
       formStatus.classList.add('success-alert');
-      formStatus.textContent = 'Submitting message to server...';
+      formStatus.textContent = 'Submitting message...';
 
       // Read form data values
       const formData = {
@@ -232,50 +232,50 @@ document.addEventListener('DOMContentLoaded', () => {
         message: contactForm.elements['message'].value
       };
 
-      fetch('/api/contact', {
+      // Submit to Web3Forms (Frontend Static Delivery)
+      fetch('https://api.web3forms.com/submit', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          access_key: '8a5e9a61-5166-4188-acf3-d2783b359558',
+          name: formData.name,
+          email: formData.email,
+          message: formData.message
+        })
       })
-      .then(response => {
-        return response.json().then(data => {
-          if (!response.ok) {
-            throw new Error(data.message || 'Server error occurred during submission.');
-          }
-          return data;
-        });
-      })
+      .then(response => response.json())
       .then(data => {
-        // Success response from Express backend
-        formStatus.className = 'form-status success-alert';
-        formStatus.textContent = data.message || 'Thank you! Your message has been received.';
-        
-        // Reset form variables and fields
-        contactForm.reset();
-        hasSubmitted = false;
-        
-        formInputs.forEach(input => {
-          input.setAttribute('aria-invalid', 'false');
-          const errorId = `${input.id}-error`;
-          const errorElement = document.getElementById(errorId);
-          if (errorElement) {
-            errorElement.textContent = '';
-            errorElement.style.display = 'none';
-          }
-        });
+        if (data.success) {
+          // Success response
+          formStatus.className = 'form-status success-alert';
+          formStatus.textContent = "Thank you! Your message has been sent to Siva's email directly.";
+          
+          // Reset form variables and fields
+          contactForm.reset();
+          hasSubmitted = false;
+          
+          formInputs.forEach(input => {
+            input.setAttribute('aria-invalid', 'false');
+            const errorId = `${input.id}-error`;
+            const errorElement = document.getElementById(errorId);
+            if (errorElement) {
+              errorElement.textContent = '';
+              errorElement.style.display = 'none';
+            }
+          });
+        } else {
+          throw new Error('Web3Forms declined the submission. Ensure your email is verified!');
+        }
 
-        // Shift focus to success alert banner
         formStatus.setAttribute('tabindex', '-1');
         formStatus.focus();
       })
       .catch(err => {
-        // Handle server/network errors
         formStatus.className = 'form-status error-alert';
-        formStatus.textContent = err.message || 'Failed to submit form to backend server. Please try again.';
-        
-        // Shift focus to error alert banner
+        formStatus.textContent = err.message || 'Network error sending the message.';
         formStatus.setAttribute('tabindex', '-1');
         formStatus.focus();
       });
